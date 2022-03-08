@@ -1,0 +1,5 @@
+[deps]
+Example = "7876af07-990d-54b4-ab0e-23690620f79a"
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
+Metalhead = "dbeba491-748d-5e0e-a39e-b530a07fa0cc"
