@@ -1,55 +1,54 @@
+
+using DataLoaders: DataLoader
+using MLDataPattern: splitobs
 using Flux
-using Flux.Zygote
-using MLDatasets
-using Metalhead
-## ground truth definition
+using FluxTraining
 
-# Define the ground truth model. We aim to recover W_truth and b_truth using
-# only examples of ground_truth()
-# W_truth = [1 2 3 4 5;
-#             5 4 3 2 1]
-# b_truth = [-1.0; -2.0]
-# ground_truth(x) = W_truth*x .+ b_truth
+## defining the data
 
-## training data
+xs, ys = (
+    # convert each image into h*w*1 array of floats 
+    [Float32.(reshape(img, 28, 28, 1)) for img in Flux.Data.MNIST.images()],
+    # one-hot encode the labels
+    [Float32.(Flux.onehot(y, 0:9)) for y in Flux.Data.MNIST.labels()],
+)
 
-# Generate the ground truth training data as vectors-of-vectors
-# x_train = [ 5 .* rand(5) for _ in 1:10_000 ]
-# y_train = [ ground_truth(x) + 0.2 .* randn(2) for x in x_train ]
-# load full training set
-train_x, train_y = CIFAR10.traindata()
+# split into training and validation sets
+traindata, valdata = splitobs((xs, ys))
 
-# load full test set
-test_x,  test_y  = CIFAR10.testdata()
+## Data Augmentation
+# how to do data augmentation
+# rotate_range 10 degrees
+# width_shift_range 0.05
+# height_shift_range 0.05
+# zoom range 0.1
+# horizontal flip True
+# rescale 1/255
 
-## model
-model1 = ResNet18()
+# create iterators
+trainiter, valiter = DataLoader(traindata, 50, buffered=false), DataLoader(valdata, 50, buffered=false);
+
+## defining the model
+model = Chain(
+    Conv((3, 3), 1 => 16, relu, pad = 1, stride = 2),
+    Conv((3, 3), 16 => 32, relu, pad = 1),
+    GlobalMeanPool(),
+    Flux.flatten,
+    Dense(32, 10),
+)
+
+## loss function and optimizer
+lossfn = Flux.Losses.logitcrossentropy
+# define schedule
+es = length(trainiter) 
+schedule = Schedule([0, 20es, 30es], [0.001, 0.0005, 0.00025])
 
 
-## loss
+optim = Flux.ADAM(0.001);
+# log hyperparams
+logcb = LogHyperParams(TensorBoardBackend("tblogs"))
+## send to learner object
+learner = Learner(model, (trainiter, valiter), optim, lossfn, Scheduler(LearningRate => schedule), Metrics(accuracy), ToGPU(), logcb)
 
-# Define pieces we need to train: loss function, optimiser, examples, and params
-function loss(x, y)
-  ŷ = model1(x)
-  Flux.Losses.logitcrossentropy(ŷ, y)
-end
-opt = Descent(0.01)
-train_data = zip(train_x, train_y)
-# ps = params(W, b)
-
-## training loop
-
-# Execute a training epoch
-for (x,y) in train_data
-  gs = gradient(ps) do
-    loss(x,y)
-  end
-  Flux.Optimise.update!(opt, ps, gs)
-end
-
-# An alternate way to execute a training epoch
-# Flux.train!(loss, params(W, b), train_data, opt)
-
-# Print out how well we did
-@show W
-@show maximum(abs, W .- W_truth)
+## train model
+FluxTraining.fit!(learner, 50)
