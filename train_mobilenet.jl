@@ -1,20 +1,13 @@
-
-using DataLoaders: DataLoader
-using MLDataPattern: splitobs
-using Flux
-using FluxTraining
+include("src/setup.jl")
 
 ## defining the data
 
-xs, ys = (
-    # convert each image into h*w*1 array of floats 
-    [Float32.(reshape(img, 28, 28, 1)) for img in Flux.Data.MNIST.images()],
-    # one-hot encode the labels
-    [Float32.(Flux.onehot(y, 0:9)) for y in Flux.Data.MNIST.labels()],
-)
+xs = Flux.unsqueeze(MLDatasets.MNIST.traintensor(Float32), 3)
+ys = Float32.(Flux.onehotbatch(MLDatasets.MNIST.trainlabels(), 0:9))
 
 # split into training and validation sets
-traindata, valdata = splitobs((xs, ys))
+# 70% train, 30% val
+traindata, valdata = splitobs((xs, ys); at = 0.7)
 
 ## Data Augmentation
 # how to do data augmentation
@@ -40,8 +33,8 @@ model = Chain(
 ## loss function and optimizer
 lossfn = Flux.Losses.logitcrossentropy
 # define schedule
-es = length(trainiter) 
-schedule = Schedule([0, 20es, 30es], [0.001, 0.0005, 0.00025])
+es = length(trainiter)
+schedule = Interpolator(Step(0.001, 0.5, 10), es)
 
 
 optim = Flux.ADAM(0.001);
