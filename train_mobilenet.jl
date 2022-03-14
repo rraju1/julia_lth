@@ -1,9 +1,11 @@
 include("src/setup.jl")
+include("src/mobilenet.jl")
 
 ## defining the data
 
-xs = Flux.unsqueeze(MLDatasets.MNIST.traintensor(Float32), 3)
-ys = Float32.(Flux.onehotbatch(MLDatasets.MNIST.trainlabels(), 0:9))
+xs = MLDatasets.CIFAR10.traintensor(Float32)
+# xs = Flux.unsqueeze(MLDatasets.CIFAR10.traintensor(Float32), 3)
+ys = Float32.(Flux.onehotbatch(MLDatasets.CIFAR10.trainlabels(), 0:9))
 
 # split into training and validation sets
 # 70% train, 30% val
@@ -17,6 +19,9 @@ traindata, valdata = splitobs((xs, ys); at = 0.7)
 # zoom range 0.1
 # horizontal flip True
 # rescale 1/255
+m = MobileNetv2(nclasses = 10)
+
+## 
 
 # create iterators
 trainiter, valiter = DataLoader(traindata, 50, buffered=false), DataLoader(valdata, 50, buffered=false);
@@ -41,7 +46,7 @@ optim = Flux.ADAM(0.001);
 # log hyperparams
 logcb = LogHyperParams(TensorBoardBackend("tblogs"))
 ## send to learner object
-learner = Learner(model, (trainiter, valiter), optim, lossfn, Scheduler(LearningRate => schedule), Metrics(accuracy), ToGPU(), logcb)
+learner = Learner(m, (trainiter, valiter), optim, lossfn, Scheduler(LearningRate => schedule), Metrics(accuracy), ToGPU(), logcb)
 
 ## train model
 FluxTraining.fit!(learner, 50)
