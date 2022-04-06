@@ -1,4 +1,6 @@
 [deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
 DataAugmentation = "88a5189c-e7ff-4f85-ac6b-e6158070f02e"
 DataLoaders = "2e981812-ef13-4a9c-bfa0-ab13047b12a9"
 Example = "7876af07-990d-54b4-ab0e-23690620f79a"

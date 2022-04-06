@@ -1,16 +1,37 @@
-using DataLoaders: DataLoader
-using MLDataPattern: splitobs
 using Flux
 using FluxTraining
-using FluxTraining: Callback, HyperParameter, StepBegin, AbstractTrainingPhase, Read, Write
 using ParameterSchedulers
 using MLDatasets
-using TensorBoardLogger
-using ValueHistories
+using MLDatasets: FileDataset
+using DataLoaders: DataLoader
 using DataAugmentation
-using Functors
-using Metalhead: conv_bn
-using MLUtils   
+using CoordinateTransformations
+using Metalhead
+using MLUtils
+using BSON
 
-include("scheduler.jl")
-# include("mobilenet.jl")
+import MLDataPattern
+
+# bugfix for mapobs
+Base.getindex(data::MLUtils.MappedData, idx::Integer) = data.f(getobs(data.data, idx))
+Base.getindex(data::MLUtils.MappedData, idxs::AbstractVector) =
+    batch(map(Base.Fix1(getindex, data), idxs))
+
+# bugfix for one hot arrays
+Flux._indices(x::Base.ReshapedArray{<:Any, <:Any, <:Flux.OneHotVector}) =
+  reshape([parent(x).indices], x.dims[2:end])
+
+# hack for DataLoaders.jl + MLUtils.jl
+MLDataPattern.LearnBase.getobs(x, i) = MLUtils.getobs(x, i)
+MLDataPattern.LearnBase.nobs(x) = MLUtils.numobs(x)
+
+# bug fix for ADAMW + FluxTraining
+FluxTraining.setlearningrate!(os::Flux.Optimiser, lr) = foreach(os) do o
+  if hasproperty(o, :eta)
+    o.eta = lr
+  end
+end
+
+include("vww.jl")
+include("augmentation.jl")
+include("mobilenet.jl")
