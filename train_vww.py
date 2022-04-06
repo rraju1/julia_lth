@@ -19,8 +19,9 @@ IMAGE_SIZE = 96
 BATCH_SIZE = 32
 EPOCHS = 20
 
-BASE_DIR = os.path.join(os.getcwd(), 'vw_coco2014_96')
-
+BASE_DIR = os.path.join('/group/ece/ececompeng/lipasti/libraries/datasets/', 'vw_coco2014_96_tf')
+train_dir = os.path.join(BASE_DIR, 'train')
+val_dir = os.path.join(BASE_DIR, 'val')
 
 def main(argv):
   if len(argv) >= 2:
@@ -39,21 +40,25 @@ def main(argv):
       height_shift_range=0.05,
       zoom_range=.1,
       horizontal_flip=True,
-      validation_split=validation_split,
+      # validation_split=validation_split,
       rescale=1. / 255)
+
+  val_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+      rescale=1. / 255)
+
+  
   train_generator = datagen.flow_from_directory(
-      BASE_DIR,
+      train_dir,
       target_size=(IMAGE_SIZE, IMAGE_SIZE),
       batch_size=BATCH_SIZE,
-      subset='training',
       color_mode='rgb')
-  val_generator = datagen.flow_from_directory(
-      BASE_DIR,
+  val_generator = val_datagen.flow_from_directory(
+      val_dir,
       target_size=(IMAGE_SIZE, IMAGE_SIZE),
       batch_size=BATCH_SIZE,
-      subset='validation',
       color_mode='rgb')
   print(train_generator.class_indices)
+  print(val_generator.class_indices)
 
   model = train_epochs(model, train_generator, val_generator, 20, 0.001)
   model = train_epochs(model, train_generator, val_generator, 10, 0.0005)
