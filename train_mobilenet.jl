@@ -1,52 +1,70 @@
 include("src/setup.jl")
-include("src/mobilenet.jl")
 
 ## defining the data
 
-xs = MLDatasets.CIFAR10.traintensor(Float32)
-# xs = Flux.unsqueeze(MLDatasets.CIFAR10.traintensor(Float32), 3)
-ys = Float32.(Flux.onehotbatch(MLDatasets.CIFAR10.trainlabels(), 0:9))
+dataroot = "/group/ece/ececompeng/lipasti/libraries/datasets/vw_coco2014_96/"
+traindata = VisualWakeWords(dataroot; subset = :train) |> shuffleobs
+valdata = VisualWakeWords(dataroot; subset = :val)
 
-# split into training and validation sets
-# 70% train, 30% val
-traindata, valdata = splitobs((xs, ys); at = 0.7)
+## data augmentation
 
-## Data Augmentation
 # how to do data augmentation
-# rotate_range 10 degrees
+# rotate_range 10 degrees (i.e. random [-10, 10])
 # width_shift_range 0.05
 # height_shift_range 0.05
-# zoom range 0.1
+# zoom range 0.1 (i.e random [0.9, 1.1])
 # horizontal flip True
 # rescale 1/255
-m = MobileNetv2(nclasses = 10)
+augmentations = Rotate(10) |>
+                RandomTranslate((96, 96), (0.05, 0.05)) |>
+                Zoom((0.9, 1.1)) |>
+                ScaleFixed((96, 96)) |>
+                Maybe(FlipX()) |>
+                CenterCrop((96, 96)) |>
+                ImageToTensor()
+trainaug = map_augmentation(augmentations, traindata)
+valaug = map_augmentation(ImageToTensor(), valdata)
+;
 
-## 
+## model definition
 
-# create iterators
-trainiter, valiter = DataLoader(traindata, 50, buffered=false), DataLoader(valdata, 50, buffered=false);
+m = MobileNet(relu, 0.25; fcsize = 64, nclasses = 2)
 
-## defining the model
-model = Chain(
-    Conv((3, 3), 1 => 16, relu, pad = 1, stride = 2),
-    Conv((3, 3), 16 => 32, relu, pad = 1),
-    GlobalMeanPool(),
-    Flux.flatten,
-    Dense(32, 10),
-)
+## data loaders
 
-## loss function and optimizer
+bs = 32
+trainloader = DataLoader(BatchView(trainaug; batchsize = bs), nothing; buffered = true)
+valloader = DataLoader(BatchView(valaug; batchsize = 2 * bs), nothing; buffered = true)
+;
+
+## training setup
+
 lossfn = Flux.Losses.logitcrossentropy
-# define schedule
-es = length(trainiter)
-schedule = Interpolator(Step(0.001, 0.5, 10), es)
 
+# define schedule and optimizer
+es = length(trainloader)
+schedule = Interpolator(Step(0.001, 0.5, [20, 10, 20]), es)
+optim = Flux.ADAMW(0.001, (0.9, 0.999), 1e-4)
 
-optim = Flux.ADAM(0.001);
-# log hyperparams
-logcb = LogHyperParams(TensorBoardBackend("tblogs"))
-## send to learner object
-learner = Learner(m, (trainiter, valiter), optim, lossfn, Scheduler(LearningRate => schedule), Metrics(accuracy), ToGPU(), logcb)
+# callbacks
+logger = TensorBoardBackend("tblogs")
+schcb = Scheduler(LearningRate => schedule)
+hlogcb = LogHyperParams(logger)
+mlogcb = LogMetrics(logger)
+valcb = Metrics(Metric(accuracy; phase = ValidationPhase))
+
+# setup learner object
+learner = Learner(m, lossfn;
+                  data = (trainloader, valloader),
+                  optimizer = optim,
+                  callbacks = [schcb, ToGPU(), hlogcb, mlogcb, valcb])
 
 ## train model
+
 FluxTraining.fit!(learner, 50)
+# make sure to close logger due to network fs
+close(logger.logger)
+
+## save model
+
+BSON.@save "mobilenet-relu.bson" m
