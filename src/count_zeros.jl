@@ -1,7 +1,8 @@
 ## import stuff
 using Flux
 using LinearAlgebra
-
+using FluxPrune
+using MaskedArrays
 ## 
 function compute_dot_prods(model::Chain, input_size)
     num_multiplies_total = 0
@@ -11,9 +12,9 @@ function compute_dot_prods(model::Chain, input_size)
         num_multiplies, num_accumulates, output_size = compute_dot_prods(model[i], input_size)
         num_multiplies_total += num_multiplies
         num_accumulates_total += num_accumulates
-        println("num_multiplies in layer ", i, ": ", num_multiplies)
-        println("num_accumulates in layer ", i, ": ", num_accumulates)
-        println("output_size: ", output_size)  
+        # println("num_multiplies in layer ", i, ": ", num_multiplies)
+        # println("num_accumulates in layer ", i, ": ", num_accumulates)
+        # println("output_size: ", output_size)  
         input_size = output_size
     end
     return num_multiplies_total, num_accumulates_total
