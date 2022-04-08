@@ -423,6 +423,14 @@ git-tree-sha1 = "983271b47332fd3d9488d6f2d724570290971794"
 uuid = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 version = "0.12.9"
 
+[[deps.FluxPrune]]
+deps = ["ChainRulesCore", "Flux", "Functors", "LinearAlgebra", "MaskedArrays", "NNlib"]
+git-tree-sha1 = "0e5ac81002f933b27ec5f59f7c4be15b5b119474"
+repo-rev = "main"
+repo-url = "https://github.com/darsnack/FluxPrune.jl"
+uuid = "1384c1f3-d8dd-4e05-9122-0c792acaad72"
+version = "0.1.0"
+
 [[deps.FluxTraining]]
 deps = ["BSON", "DataStructures", "EarlyStopping", "Flux", "Glob", "Graphs", "ImageCore", "InlineTest", "OnlineStats", "ParameterSchedulers", "Parameters", "PrettyTables", "ProgressMeter", "Reexport", "Statistics", "TensorBoardLogger", "UUIDs", "ValueHistories", "Zygote"]
 git-tree-sha1 = "43cc508105dea8210abf4eb45c3bc2c1aecff234"
@@ -906,6 +914,13 @@ version = "0.4.1"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
+[[deps.MaskedArrays]]
+git-tree-sha1 = "100ecf7afce36b401986f0fcbff0be61431133ce"
+repo-rev = "main"
+repo-url = "https://github.com/darsnack/MaskedArrays.jl"
+uuid = "e3e6debb-e142-42bc-8e83-ba8646d1d252"
+version = "0.1.0"
+
 [[deps.MatrixFactorizations]]
 deps = ["ArrayLayouts", "LinearAlgebra", "Printf", "Random"]
 git-tree-sha1 = "2212d36f97e01347adb1460a6914e20f2feee853"
@@ -1161,9 +1176,9 @@ version = "2.4.2"
 
 [[deps.Quaternions]]
 deps = ["DualNumbers", "LinearAlgebra", "Random"]
-git-tree-sha1 = "522770af103809e8346aefa4b25c31fbec377ccf"
+git-tree-sha1 = "3754f35199da1bb4a55211ddbfd64cb1efee2272"
 uuid = "94ee1d12-ae83-5a48-8b1c-48b8ff168ae0"
-version = "0.5.3"
+version = "0.5.4"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
