@@ -1,0 +1,7 @@
+[mobilenet]
+lazy = true
+git-tree-sha1 = "ee24515962b7f8306187802d221a67f6feca4bec"
+
+    [[mobilenet.download]]
+    url = "https://github.com/UW-PHARM/bitstream-hackathon/raw/gh-pages/assets/mobilenet.tar.gz"
+    sha256 = "b7da0a234c66721e5e28fc632ade19ad2c3bdf27eb102184726008cfa582d7b6"
