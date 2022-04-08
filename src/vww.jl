@@ -1,6 +1,6 @@
-struct VisualWakeWords <: MLUtils.AbstractDataContainer
+struct VisualWakeWords{T<:FileDataset} <: MLUtils.AbstractDataContainer
     path::String
-    images::FileDataset
+    images::T
     labels::Vector{Int}
 end
 

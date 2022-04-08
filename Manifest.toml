@@ -931,7 +931,7 @@ version = "0.5.0"
 [[deps.Metalhead]]
 deps = ["Artifacts", "BSON", "Flux", "Functors", "LazyArtifacts", "MLUtils", "NNlib", "NeuralAttentionlib", "Statistics"]
 git-tree-sha1 = "1df4221fa06d22b18927fb7dcb42ab77e9ec1b8e"
-repo-rev = "release-0.7"
+repo-rev = "hackathon"
 repo-url = "https://github.com/darsnack/Metalhead.jl"
 uuid = "dbeba491-748d-5e0e-a39e-b530a07fa0cc"
 version = "0.7.0"

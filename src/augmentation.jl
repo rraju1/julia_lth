@@ -1,16 +1,3 @@
-struct Pad{N} <: DataAugmentation.Transform
-    size::NTuple{N, Int}
-end
-Pad(size::Int, N::Int) = Pad(ntuple(i -> size, N))
-
-function DataAugmentation.apply(pad::Pad{M}, item::Image{N}; randstate) where {M, N}
-    @assert M == 2*N "For an Image{N}, supply a Pad{2*N}."
-
-    output = NNlib.pad_zeros(item.data, pad.size)
-
-    return Image(output, item.bounds)
-end
-
 struct RandomTranslate{N} <: DataAugmentation.ProjectiveTransform
     shift::NTuple{N, Int}
 end
@@ -22,10 +9,6 @@ DataAugmentation.getrandstate(tfm::RandomTranslate) = map(s -> rand(-s:s), tfm.s
 DataAugmentation.getprojection(tfm::RandomTranslate, bounds::Bounds;
                                randstate = DataAugmentation.getrandstate(tfm)) =
     Translation(randstate...)
-
-# RandomTranslate(sz, shift::NTuple{2, Int}) =
-#     Pad((shift[1], shift[1], shift[2], shift[2])) |> RandomCrop(sz)
-
 
 apply_augmenation(pipeline, x) = itemdata(DataAugmentation.apply(pipeline, Image(x)))
 apply_augmenation(pipeline, x::AbstractVector) =

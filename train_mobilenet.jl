@@ -43,15 +43,18 @@ lossfn = Flux.Losses.logitcrossentropy
 
 # define schedule and optimizer
 es = length(trainloader)
-schedule = Interpolator(Step(0.001, 0.5, [20, 10, 20]), es)
-optim = Flux.ADAMW(0.001, (0.9, 0.999), 1e-4)
+initial_lr = 0.01
+schedule = Interpolator(Step(initial_lr, 0.5, [35, 10, 5]), es)
+# this is a patched ADAMW not Flux.ADAMW
+optim = Momentum(initial_lr)
 
 # callbacks
 logger = TensorBoardBackend("tblogs")
 schcb = Scheduler(LearningRate => schedule)
 hlogcb = LogHyperParams(logger)
 mlogcb = LogMetrics(logger)
-valcb = Metrics(Metric(accuracy; phase = ValidationPhase))
+valcb = Metrics(Metric(accuracy; phase = TrainingPhase, name = "train_acc"),
+                Metric(accuracy; phase = ValidationPhase, name = "val_acc"))
 
 # setup learner object
 learner = Learner(m, lossfn;
