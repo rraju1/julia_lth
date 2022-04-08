@@ -9,6 +9,7 @@ using CoordinateTransformations
 using Metalhead
 using MLUtils
 using BSON
+using BitSAD, NNlibBitSAD
 
 import MLDataPattern
 
