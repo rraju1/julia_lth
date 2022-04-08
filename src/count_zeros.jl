@@ -7,17 +7,18 @@ using MaskedArrays
 function compute_dot_prods(model::Chain, input_size)
     num_multiplies_total = 0
     num_accumulates_total = 0
+    intermediate_size = input_size
 
     for i in 1:length(model)
-        num_multiplies, num_accumulates, output_size = compute_dot_prods(model[i], input_size)
+        num_multiplies, num_accumulates, output_size = compute_dot_prods(model[i], intermediate_size)
         num_multiplies_total += num_multiplies
         num_accumulates_total += num_accumulates
-        # println("num_multiplies in layer ", i, ": ", num_multiplies)
-        # println("num_accumulates in layer ", i, ": ", num_accumulates)
-        # println("output_size: ", output_size)  
-        input_size = output_size
+        println("num_multiplies in layer ", i, ": ", num_multiplies)
+        println("num_accumulates in layer ", i, ": ", num_accumulates)
+        println("output_size: ", output_size)  
+        intermediate_size = output_size
     end
-    return num_multiplies_total, num_accumulates_total
+    return num_multiplies_total, num_accumulates_total, intermediate_size
 end
 
 # default case
