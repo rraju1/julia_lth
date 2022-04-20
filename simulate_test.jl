@@ -12,19 +12,30 @@ testset = map_augmentation(ImageToTensor(), testdata)
 
 ## model definition and select a random sample
 
-m = BSON.load("mobilenet-relu.bson")[:m]
+m = BSON.load("mobilenet.bson")[:m]
 x, y = randobs(testset)
 x = Flux.unsqueeze(x, 4)
 
+## prepare for bitstream
+
+mbit, scaling = prepare_bitstream_model(m)
+total_scaling = prod(prod.(scaling))
+
+## test error
+
+m(x) .- mbit(x) .* total_scaling
+
 ## convert to bitstream
 
-mbit, scaling = scale_parameters!(merge_conv_bn(m))
 mbit = mbit |> tosbitstream
 xbit = SBitstream.(x)
 
-##
+## test error
 
 ybit = mbit(xbit)
+y = m(x)
+ybit_scaled = float.(ybit) .* total_scaling
+mean(abs.(y .- ybit_scaled))
 
 ##
 
