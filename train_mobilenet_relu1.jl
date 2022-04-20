@@ -28,7 +28,8 @@ valaug = map_augmentation(ImageToTensor(), valdata)
 
 ## model definition
 
-m = MobileNet(relu, 0.25; fcsize = 64, nclasses = 2)
+m = MobileNet(relu, 0.25; fcsize = 64, nclasses = 1)
+# Flux.loadmodel!(m, BSON.load(joinpath(artifact"mobilenet", "mobilenet.bson"))[:m])
 
 ## data loaders
 
@@ -39,27 +40,27 @@ valloader = DataLoader(BatchView(valaug; batchsize = 2 * bs), nothing; buffered 
 
 ## training setup
 
-lossfn = Flux.Losses.logitcrossentropy
+lossfn = Flux.Losses.logitbinarycrossentropy
+accfn(ŷ, y) = mean((ŷ .> 0) .== y)
 
 # define schedule and optimizer
-# es = length(trainloader)
+es = length(trainloader)
 initial_lr = 0.01
-# schedule = Interpolator(Step(initial_lr, 0.5, [45, 5]), es)
+schedule = Interpolator(Step(initial_lr, 0.5, [25, 45]), es)
 optim = Momentum(initial_lr)
 
 # callbacks
 logger = TensorBoardBackend("tblogs")
 # schcb = Scheduler(LearningRate => schedule)
-# hlogcb = LogHyperParams(logger)
-mlogcb = LogMetrics(logger)
-valcb = Metrics(Metric(accuracy; phase = TrainingPhase, name = "train_acc"),
-                Metric(accuracy; phase = ValidationPhase, name = "val_acc"))
+logcb = (LogMetrics(logger),)# LogHyperParams(logger))
+valcb = Metrics(Metric(accfn; phase = TrainingPhase, name = "train_acc"),
+                Metric(accfn; phase = ValidationPhase, name = "val_acc"))
 
 # setup learner object
 learner = Learner(m, lossfn;
                   data = (trainloader, valloader),
                   optimizer = optim,
-                  callbacks = [ToGPU(), mlogcb, valcb])
+                  callbacks = [ToGPU(), logcb..., valcb])
 
 ## train model
 

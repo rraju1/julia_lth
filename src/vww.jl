@@ -5,9 +5,6 @@ struct VisualWakeWords{T<:FileDataset} <: MLUtils.AbstractDataContainer
 end
 
 function VisualWakeWords(dir; subset = :train)
-    (subset in (:train, :val)) ||
-        throw(ArgumentError("VisualWakeWords keyword subset must be :train or :val."))
-
     paths = String[]
     labels = Int[]
     for line in readlines(joinpath(dir, "$subset.txt"))
@@ -24,6 +21,6 @@ Base.show(io::IO, ::MIME"text/plain", data::VisualWakeWords) =
 
 Base.length(data::VisualWakeWords) = length(data.labels)
 Base.getindex(data::VisualWakeWords, i::Integer) =
-    (image = data.images[i], label = Flux.onehot(data.labels[i], [0, 1]))
+    (image = data.images[i], label = [data.labels[i]])
 Base.getindex(data::VisualWakeWords, is::AbstractVector) =
-    (image = batch(data.images[is]), label = Flux.onehotbatch(data.labels[is], [0, 1]))
+    (image = batch(data.images[is]), label = Flux.unsqueeze(data.labels[is], 1))

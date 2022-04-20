@@ -10,6 +10,8 @@ using Metalhead
 using MLUtils
 using BSON
 using BitSAD, NNlibBitSAD
+using Artifacts, LazyArtifacts
+using Statistics
 
 import MLDataPattern
 
@@ -36,10 +38,7 @@ FluxTraining.setlearningrate!(os::Flux.Optimiser, lr) = foreach(os) do o
     end
 end
 
-# bug fix for ADAMW
-ADAMW(η = 0.001, β = (0.9, 0.999), decay = 0) =
-    Flux.Optimiser(ADAM(η, β), WeightDecay(decay))
-
 include("vww.jl")
 include("augmentation.jl")
 include("mobilenet.jl")
+include("bitstream.jl")

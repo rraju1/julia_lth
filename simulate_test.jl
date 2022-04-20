@@ -1,15 +1,33 @@
 include("src/setup.jl")
 
-##
+## defining the data
 
-m = BSON.load("mobilenet-relu-nowd.bson")[:m]
-x = rand(Float32, 96, 96, 3, 1)
+dataroot = "/group/ece/ececompeng/lipasti/libraries/datasets/vww-hackathon/"
+testdata = VisualWakeWords(dataroot; subset = :test)
 
-##
+## data augmentation
 
-mbit = m |> tosbitstream
+testset = map_augmentation(ImageToTensor(), testdata)
+;
+
+## model definition and select a random sample
+
+m = BSON.load("mobilenet-relu.bson")[:m]
+x, y = randobs(testset)
+x = Flux.unsqueeze(x, 4)
+
+## convert to bitstream
+
+mbit, scaling = scale_parameters!(merge_conv_bn(m))
+mbit = mbit |> tosbitstream
 xbit = SBitstream.(x)
 
 ##
 
 ybit = mbit(xbit)
+
+##
+
+@time msim = simulatable(mbit, xbit)
+
+##
