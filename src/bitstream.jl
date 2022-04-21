@@ -138,3 +138,35 @@ function prepare_bitstream_model(model)
 
     return model, scaling
 end
+
+struct Simlatable{T, S}
+    base::T
+    sim::S
+end
+
+Flux.@functor Simlatable
+
+(layer::Simlatable)(x) = layer.sim(layer.base, x)
+
+function _make_simulatable(layer, x)
+    y = layer(x)
+    sim = Simlatable(layer, simulatable(layer, x))
+
+    return sim, y
+end
+function _make_simulatable(model::Chain, x)
+    sim_layers = []
+    for (i, layer) in enumerate(model)
+        @info "Generating simulatable for layer $i"
+        sim_layer, x = _make_simulatable(layer, x)
+        push!(sim_layers, sim_layer)
+    end
+
+    return Chain(sim_layers...), x
+end
+
+function make_simulatable(model, insize)
+    x = SBitstream.(rand(Float32, insize...))
+
+    return _make_simulatable(model, x)[1]
+end

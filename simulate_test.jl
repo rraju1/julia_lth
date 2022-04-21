@@ -27,6 +27,7 @@ m(x) .- mbit(x) .* total_scaling
 
 ## convert to bitstream
 
+BitSAD.set_saturation_verbosity(:none)
 mbit = mbit |> tosbitstream
 xbit = SBitstream.(x)
 
@@ -37,8 +38,10 @@ y = m(x)
 ybit_scaled = float.(ybit) .* total_scaling
 mean(abs.(y .- ybit_scaled))
 
-##
+## make simulatable
 
-@time msim = simulatable(mbit, xbit)
+@time msim = make_simulatable(mbit, size(xbit))
 
-##
+## test simulatable
+
+ysim = msim(xbit)

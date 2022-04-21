@@ -105,7 +105,7 @@ version = "0.5.10"
 
 [[deps.BitSAD]]
 deps = ["Artifacts", "DataStructures", "Ghost", "LazyArtifacts", "LightGraphs", "LinearAlgebra", "MacroTools", "MetaGraphs", "OrderedCollections", "Random", "RandomNumbers", "Setfield", "Statistics"]
-git-tree-sha1 = "06ef500952109876e470f25ed3c9d085427c6c15"
+git-tree-sha1 = "e84a12c285e48ed5fe09a948de0f89a642671cf5"
 repo-rev = "master"
 repo-url = "https://github.com/UW-PHARM/BitSAD.jl.git"
 uuid = "7f90e340-ca22-4a3e-a259-118ed254aff3"
@@ -862,7 +862,7 @@ version = "0.8.4"
 
 [[deps.NNlibBitSAD]]
 deps = ["Artifacts", "BitSAD", "Functors", "Ghost", "LazyArtifacts", "NNlib"]
-git-tree-sha1 = "091cedff34ca2e1f9f72b1e55a076c4e994c9b51"
+git-tree-sha1 = "3d4db9e774d915cd6d0cfafc1aeaa2f2d554965f"
 repo-rev = "main"
 repo-url = "https://github.com/UW-PHARM/NNlibBitSAD.jl"
 uuid = "3a97d706-ca6b-42d2-9a6c-df68ab7e4fa7"
