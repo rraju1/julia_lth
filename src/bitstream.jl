@@ -162,7 +162,7 @@ function _make_simulatable(model::Chain, x)
         push!(sim_layers, sim_layer)
     end
 
-    return Chain(sim_layers...), x
+    return Chain(sim_layers), x
 end
 
 function make_simulatable(model, insize)

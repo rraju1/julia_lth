@@ -40,7 +40,7 @@ mean(abs.(y .- ybit_scaled))
 
 ## make simulatable
 
-@time msim = make_simulatable(mbit, size(xbit))
+@time msim = make_simulatable(mbit, (96, 96, 3, 100));
 
 ## test simulatable
 
